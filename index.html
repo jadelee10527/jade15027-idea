@@ -1,0 +1,169 @@
+<<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>아이디어 공유</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f7e9;
+            color: #2c3e50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #2ecc71;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .input-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 20px; /* 둥글게 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            margin-bottom: 30px;
+        }
+
+        .input-container input, .input-container textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 15px; /* 더 둥글게 */
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .input-container button {
+            width: 100%;
+            padding: 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 25px; /* 더 둥글게 */
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-container button:hover {
+            background-color: #27ae60;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 15px; /* 카드도 둥글게 */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+
+        .card p {
+            margin: 0;
+            font-size: 1rem;
+            color: #7f8c8d;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>아이디어 공유</h1>
+
+    <div class="input-container">
+        <input id="title" type="text" placeholder="제목을 입력하세요">
+        <textarea id="idea" placeholder="아이디어를 입력하세요"></textarea>
+        <button id="add-button">추가</button>
+    </div>
+
+    <div class="card-container" id="card-container">
+        <!-- 아이디어 카드가 여기에 표시됩니다 -->
+    </div>
+
+    <script type="module">
+      // Firebase 설정
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+      import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+          apiKey: "AIzaSyB2PByxdT16l1TmI-7VS3jDYx6MkJsQa9A",
+          authDomain: "today-81f77.firebaseapp.com",
+          projectId: "today-81f77",
+          storageBucket: "today-81f77.appspot.com",
+          messagingSenderId: "594443469024",
+          appId: "1:594443469024:web:0ecd38102ea99c05b01085",
+          measurementId: "G-LDT83DGDDG"
+      };
+
+      // Firebase 초기화
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      // DOMContentLoaded 이벤트 내에서 addIdea 함수를 정의
+      document.addEventListener('DOMContentLoaded', () => {
+          async function addIdea() {
+              const title = document.getElementById('title').value;
+              const idea = document.getElementById('idea').value;
+
+              if (title && idea) {
+                  await addDoc(collection(db, "ideas"), {
+                      title: title,
+                      idea: idea,
+                      timestamp: new Date()
+                  });
+
+                  document.getElementById('title').value = '';
+                  document.getElementById('idea').value = '';
+              } else {
+                  alert('제목과 아이디어를 모두 입력하세요.');
+              }
+          }
+
+          // 버튼에 클릭 이벤트 연결
+          document.getElementById('add-button').addEventListener('click', addIdea);
+
+          // 실시간 아이디어 업데이트
+          const cardContainer = document.getElementById('card-container');
+          onSnapshot(collection(db, "ideas"), (snapshot) => {
+              cardContainer.innerHTML = '';
+              snapshot.forEach((doc) => {
+                  const data = doc.data();
+                  const card = document.createElement('div');
+                  card.className = 'card';
+                  card.innerHTML = `<h2>${data.title}</h2><p>${data.idea}</p>`;
+                  cardContainer.appendChild(card);
+              });
+          });
+      });
+    </script>
+</body>
+</html>
